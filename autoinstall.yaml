@@ -8,9 +8,8 @@ autoinstall:
     layout: ru
   identity:
     hostname: mdm
-    username: 7io
-    password: "$6$exDY1SdbMBRssotn$7pS7979S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79"
-    realname: 7io
+    username: ss
+    realname: ss
   ssh:
     install-server: true
     allow-pw: true
@@ -34,13 +33,13 @@ autoinstall:
     # 1. Отключаем Wayland (исправляет черные окна в VirtualBox)
     - curtin in-target -- sed -i 's/#WaylandEnable=false/WaylandEnable=false/' /etc/gdm3/custom.conf
     # 2. Добавляем пользователя в группу docker
-    - curtin in-target -- usermod -aG docker 7io
+    - curtin in-target -- usermod -aG docker ss
     # 3. Настройка рабочей директории
-    - curtin in-target -- mkdir -p /home/7io/projects
-    - curtin in-target -- chown -R 7io:7io /home/7io/projects
+    - curtin in-target -- mkdir -p /home/ss/projects
+    - curtin in-target -- chown -R ss:ss /home/ss/projects
     # 4. (Опционально) Предустановка расширений VS Code для Python и Docker
-    - curtin in-target -- sudo -u 7io code --install-extension ms-python.python
-    - curtin in-target -- sudo -u 7io code --install-extension ms-azuretools.vscode-docker
+    - curtin in-target -- sudo -u ss code --install-extension ms-python.python
+    - curtin in-target -- sudo -u ss code --install-extension ms-azuretools.vscode-docker
 
   user-data:
     package_upgrade: true
