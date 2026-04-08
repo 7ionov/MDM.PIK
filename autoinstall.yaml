@@ -1,6 +1,7 @@
 #cloud-config
 autoinstall:
   version: 1
+  # Оставляем интерактивность только если реально нужно что-то менять руками
   interactive-sections:
     - identity
   locale: ru_RU.UTF-8
@@ -10,11 +11,11 @@ autoinstall:
     hostname: mdm
     username: ss
     realname: ss
+    # Пароль обязателен для валидации (здесь '1234')
+    password: "$6$exDY1SdbMBRssotn$7pS7979S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79"
   ssh:
     install-server: true
     allow-pw: true
-  
-  # Установка стандартных APT-пакетов
   packages:
     - docker.io
     - docker-compose
@@ -22,24 +23,15 @@ autoinstall:
     - python3-pip
     - python3-venv
     - curl
-    - build-essential # Важно для компиляции некоторых Python-библиотек
-
-  # Установка VS Code через Snap
+    - build-essential
   snaps:
     - name: code
       classic: true
-
   late-commands:
-    # 1. Отключаем Wayland (исправляет черные окна в VirtualBox)
+    # 1. Отключаем Wayland
     - curtin in-target -- sed -i 's/#WaylandEnable=false/WaylandEnable=false/' /etc/gdm3/custom.conf
-    # 2. Добавляем пользователя в группу docker
+    # 2. Права Docker
     - curtin in-target -- usermod -aG docker ss
-    # 3. Настройка рабочей директории
+    # 3. Создание папки проектов
     - curtin in-target -- mkdir -p /home/ss/projects
     - curtin in-target -- chown -R ss:ss /home/ss/projects
-    # 4. (Опционально) Предустановка расширений VS Code для Python и Docker
-    - curtin in-target -- sudo -u ss code --install-extension ms-python.python
-    - curtin in-target -- sudo -u ss code --install-extension ms-azuretools.vscode-docker
-
-  user-data:
-    package_upgrade: true
