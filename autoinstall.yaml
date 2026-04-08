@@ -1,0 +1,46 @@
+#cloud-config
+autoinstall:
+  version: 1
+  interactive-sections:
+    - identity
+  locale: ru_RU.UTF-8
+  keyboard:
+    layout: ru
+  identity:
+    hostname: mdm
+    username: 7io
+    password: "$6$exDY1SdbMBRssotn$7pS7979S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79"
+    realname: 7io
+  ssh:
+    install-server: true
+    allow-pw: true
+  
+  # Установка стандартных APT-пакетов
+  packages:
+    - docker.io
+    - docker-compose
+    - git
+    - python3-pip
+    - python3-venv
+    - curl
+    - build-essential # Важно для компиляции некоторых Python-библиотек
+
+  # Установка VS Code через Snap
+  snaps:
+    - name: code
+      classic: true
+
+  late-commands:
+    # 1. Отключаем Wayland (исправляет черные окна в VirtualBox)
+    - curtin in-target -- sed -i 's/#WaylandEnable=false/WaylandEnable=false/' /etc/gdm3/custom.conf
+    # 2. Добавляем пользователя в группу docker
+    - curtin in-target -- usermod -aG docker 7io
+    # 3. Настройка рабочей директории
+    - curtin in-target -- mkdir -p /home/7io/projects
+    - curtin in-target -- chown -R 7io:7io /home/7io/projects
+    # 4. (Опционально) Предустановка расширений VS Code для Python и Docker
+    - curtin in-target -- sudo -u 7io code --install-extension ms-python.python
+    - curtin in-target -- sudo -u 7io code --install-extension ms-azuretools.vscode-docker
+
+  user-data:
+    package_upgrade: true
