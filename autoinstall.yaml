@@ -1,7 +1,9 @@
 #cloud-config
+# ТЕХНИЧЕСКОЕ ОПРЕДЕЛЕНИЕ: Provisioning / Infrastructure as Code (IaC)
+# Цель: Подготовка ОС, системных зависимостей и глобальных настроек окружения.
+
 autoinstall:
   version: 1
-  # Оставляем интерактивность только если реально нужно что-то менять руками
   interactive-sections:
     - identity
   locale: ru_RU.UTF-8
@@ -11,32 +13,46 @@ autoinstall:
     hostname: mdm
     username: ss
     realname: ss
-    # Пароль обязателен для валидации (здесь '1234')
     password: "$6$exDY1SdbMBRssotn$7pS7979S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79S79"
+  
+  # Автоматическое расширение LVM на весь физический диск (решение проблемы 12Гб)
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: all
+
   ssh:
     install-server: true
     allow-pw: true
+
   packages:
+    # Системный стек (Runtime & Build Tools)
     - docker.io
     - docker-compose
     - git
-    - python3-pip
-    - python3-venv
     - curl
     - build-essential
+    - pkg-config
+    - python3-pip
+    - python3-venv
+    - python3-dev
+    - libssl-dev
+    - libffi-dev
+    - libmysqlclient-dev
+    - mysql-server
+    - default-mysql-client
+
   snaps:
     - name: code
       classic: true
     - name: brave
+
   late-commands:
-    # 1. Отключаем Wayland
+    # Настройка графического сервера и прав доступа
     - curtin in-target -- sed -i 's/#WaylandEnable=false/WaylandEnable=false/' /etc/gdm3/custom.conf
-    # 2. Права Docker
     - curtin in-target -- usermod -aG docker ss
-    # 3. Создание папки проектов
-    - curtin in-target -- mkdir -p /home/ss/projects
-    - curtin in-target -- chown -R ss:ss /home/ss/projects
-    # 4. Создание файла подкачки
+
+    # Оптимизация памяти (Swap 4GB)
     - curtin in-target -- swapoff -a
     - curtin in-target -- fallocate -l 4G /swapfile
     - curtin in-target -- chmod 600 /swapfile
@@ -44,6 +60,7 @@ autoinstall:
     - curtin in-target -- swapon /swapfile
     - curtin in-target -- sh -c "echo '/swapfile none swap sw 0 0' >> /etc/fstab"
     - curtin in-target -- sh -c "echo 'vm.swappiness=10' >> /etc/sysctl.conf"
-    # 5. Удаление Firefox
+
+    # Очистка системы от предустановленного браузера
     - curtin in-target -- snap remove firefox
     - curtin in-target -- apt-get purge -y firefox
